@@ -24,6 +24,38 @@ sudo dnf install systemd-devel
 cargo run --release --no-default-features
 ```
 
+## インストール
+
+### Linux / macOS（ローカル）
+```bash
+./install.sh              # ~/.local/share/noderunner/ にインストール
+./install.sh --minimal    # gamepad/sound なし
+./install.sh --uninstall  # アンインストール
+```
+
+### Linux パッケージ（deb / rpm）
+```bash
+./package.sh              # deb + rpm 両方を dist/ に生成
+./package.sh deb          # deb のみ
+./package.sh rpm          # rpm のみ
+sudo dpkg -i dist/noderunner_0.3.2-1_amd64.deb   # Debian/Ubuntu
+sudo rpm -i dist/noderunner-0.3.2-1.x86_64.rpm    # Fedora/RHEL
+```
+
+### Windows（ローカル）
+```powershell
+.\install.ps1             # %LOCALAPPDATA%\NodeRunner\ にインストール
+.\install.ps1 -Uninstall  # アンインストール
+```
+
+### Windows（MSI インストーラ）
+```powershell
+.\build-msi.ps1           # dist\noderunner-0.3.2.msi を生成
+msiexec /i dist\noderunner-0.3.2.msi              # インストール
+msiexec /i dist\noderunner-0.3.2.msi /qn          # サイレント
+```
+WiX Toolset v3 または v4 が必要です。
+
 ## 操作方法
 
 ### キーボード
@@ -34,7 +66,21 @@ cargo run --release --no-default-features
 | `Z` / `Q` | 左下をハック |
 | `X` / `E` | 右下をハック |
 | `R` | レベルリスタート |
-| `ESC` | 終了 |
+| `ESC` | メニューに戻る / 終了 |
+
+### ファンクションキー
+
+| キー | アクション |
+|------|-----------|
+| `F1` | ポーズ / 再開 |
+| `F2` | レベルリスタート |
+| `F3` | レベルパック選択 |
+| `F4` | レベル選択画面へ |
+| `F5`〜`F8` | スロット1〜4にセーブ |
+| `F9`〜`F12` | スロット1〜4からロード |
+
+ポーズ中も `F3`（パック選択）、`F5`〜`F8`（セーブ）、`F9`〜`F12`（ロード）が使えます。  
+タイトル画面では `F9`〜`F12` でセーブデータをロードできます。
 
 ### ゲームパッド
 
@@ -64,11 +110,18 @@ Xbox / PlayStation / Switch Pro / 汎用 HID コントローラー対応（`gilr
 ## アーキテクチャ
 
 ```
+├── Cargo.toml
 ├── config.toml              # 速度・ボタン設定（外部ファイル）
+├── install.sh               # Linux/macOS インストーラ
+├── install.ps1              # Windows インストーラ
+├── package.sh               # deb/rpm パッケージビルダ
+├── build-msi.ps1            # Windows MSI ビルダ
 ├── levels/                  # レベルファイル（外部、.txt）
-│   ├── 01_genesis_block.txt
-│   ├── 02_locked_vault.txt
-│   └── ...
+│   ├── 001_level1.txt
+│   ├── 002_level2.txt
+│   └── ... (155 levels)
+├── packs/                   # レベルパック（.nlp）
+│   └── classic_challenge.nlp
 └── src/
     ├── main.rs              # IOレイヤ: ゲームループ・入力マッピング
     ├── config.rs            # config.toml読み込み
@@ -81,11 +134,13 @@ Xbox / PlayStation / Switch Pro / 汎用 HID コントローラー対応（`gilr
     │   ├── world.rs         # WorldState（全状態のスナップショット）
     │   ├── step.rs          # Step関数（固定処理順序）
     │   ├── event.rs         # イベント定義
-    │   └── level.rs         # レベルローダ（外部ファイル / 内蔵フォールバック）
+    │   ├── level.rs         # レベルローダ（外部ファイル / 内蔵フォールバック）
+    │   └── save.rs          # セーブ/ロード（スロット式 + レガシー）
     └── ui/                  # プレゼンテーション: 入力・描画
         ├── input.rs         # キーボード入力状態トラッカー
         ├── gamepad.rs       # ゲームパッド入力 (gilrs, optional)
-        └── renderer.rs      # crossterm描画
+        ├── renderer.rs      # crossterm描画（ダブルバッファ・差分更新）
+        └── sound.rs         # 効果音 (rodio, optional)
 ```
 
 ### 設計原則（仕様書準拠）

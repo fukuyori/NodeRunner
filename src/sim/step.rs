@@ -78,9 +78,16 @@ fn can_drop_gold_at(world: &WorldState, x: usize, y: usize) -> bool {
     let tile = world.terrain_at(x, y);
     // Must be an empty cell — not a ladder, rope, gold, etc.
     if tile != Tile::Empty { return false; }
-    // Must have solid ground below (or be at map bottom)
+    // Must have solid ground below, or an active hole below
+    // (holes revert to brick when they close, so gold above a hole is valid).
+    // Map bottom also counts as support.
     if y + 1 >= world.height { return true; }
-    world.terrain_at(x, y + 1).is_solid()
+    if world.terrain_at(x, y + 1).is_solid() { return true; }
+    // Check if there's an active hole below
+    if y + 1 < world.hole_grid.len() && x < world.hole_grid[y + 1].len() {
+        return world.hole_grid[y + 1][x];
+    }
+    false
 }
 
 // ══════════════════════════════════════════════════════════════

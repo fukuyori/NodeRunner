@@ -20,7 +20,7 @@ set -euo pipefail
 # ── Config ──
 APP_NAME="noderunner"
 APP_DISPLAY="NodeRunner: Mainnet Protocol"
-VERSION="0.3.1"
+VERSION="0.3.2"
 
 DATA_DIR="${HOME}/.local/share/${APP_NAME}"
 BIN_DIR="${HOME}/.local/bin"

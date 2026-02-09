@@ -11,8 +11,8 @@
 #   ./package.sh --help       Show help
 #
 # Output:
-#   dist/noderunner_0.3.1-1_amd64.deb
-#   dist/noderunner-0.3.1-1.x86_64.rpm
+#   dist/noderunner_0.3.2-1_amd64.deb
+#   dist/noderunner-0.3.2-1.x86_64.rpm
 #
 # ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
 
@@ -20,7 +20,7 @@ set -euo pipefail
 
 # ── Package Metadata ──
 PKG_NAME="noderunner"
-PKG_VERSION="0.3.1"
+PKG_VERSION="0.3.2"
 PKG_RELEASE="1"
 PKG_SUMMARY="NodeRunner: Mainnet Protocol — terminal-based action puzzle"
 PKG_DESCRIPTION="A Lode Runner-inspired terminal game written in Rust.
@@ -259,7 +259,7 @@ DESKTOP
 create_manpage() {
     local dst="$1"
     cat > "$dst" << 'MANPAGE'
-.TH NODERUNNER 6 "2026" "0.3.1" "Games"
+.TH NODERUNNER 6 "2026" "0.3.2" "Games"
 .SH NAME
 noderunner \- terminal-based action puzzle game
 .SH SYNOPSIS

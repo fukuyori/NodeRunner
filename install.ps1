@@ -24,7 +24,7 @@ $ErrorActionPreference = "Stop"
 # ── Config ──
 $AppName     = "noderunner"
 $AppDisplay  = "NodeRunner: Mainnet Protocol"
-$Version     = "0.3.1"
+$Version     = "0.3.2"
 $DataDir     = Join-Path $env:LOCALAPPDATA "NodeRunner"
 $ScriptDir   = Split-Path -Parent $MyInvocation.MyCommand.Path
 
