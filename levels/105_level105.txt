@@ -1,0 +1,17 @@
+# Level 105
+####==#####################~
+# $  =     $  E     P     #~
+#H#H =#T#H######T######## #~
+#H##H #T#HH##$--------$   #~
+#H ##H T##HH##$      $##H #~
+#H  ##H ###HH##$    $## H#H~
+#HH  ##H ##HHH##$  $##  HHH~
+#HHH$ #HH #H#HH##  ##  #HH#~
+#HHHH  H#H H##HH#T##  #HHH#~
+#$HHHHEH##HH###HHT#  HHH$H#~
+#HH$  HH ##H ###HT $#HHHH##~
+###H####$ ##H ##H  #HHHEHH#~
+#HHHHHHHH  #HH HHEHHH$  HH#~
+#H HH $  H  H#HHH#HH#####H#~
+#$ H#H####H     HHH$     H ~
+#####HHHH$H#####HH##########

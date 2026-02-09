@@ -1,0 +1,17 @@
+# Level 34
+~--------$$######$$--------~
+H       $###HHHH###$       H
+H      $##HHH  HHH##$      H
+H      ##HH      HH##      H
+H     $#HH        HH#$     H
+H     ##H$        $H##     H
+H     #HH$        $HH#     H
+H     #H$$        $$H#     H
+H     #HH$        $HH#     H
+H     ##H$        $H##     H
+H      #HH$      $HH#      H
+H      #THH$$  $$HHT#      H
+H       T#HHH$$HHH#T       H
+H        ###HHHH###        H
+HP      E  ######  E       H
+#########H        H########H

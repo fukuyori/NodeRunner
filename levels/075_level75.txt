@@ -1,0 +1,17 @@
+# Level 75
+    ~     $ ~ $     ~      ~
+  $ ~ $   ##H##   $ ~ $   $~
+  ##H##     H     ##H##  #H#
+    H      H        H     H 
+     H      H        H   H  
+    H       EH        H   H 
+   H        H        H --- H
+    H      H        H     H 
+     H      H ------ H   HP 
+    H -----  H        H   ##
+   H   $$   H        H      
+    H  ##  HE       H       
+   E H      H        H E    
+######TTTTTTTTTTTTTTT#######
+                            
+############################

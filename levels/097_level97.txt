@@ -1,0 +1,17 @@
+# Level 97
+             ~~----~~~~~####
+            H##H---H$$ H####
+           H####H   HH$H H H
+          H######H    HH$H$H
+          H######H     HHHHH
+          H#=#=T=H     H H H
+          H$=#=T$H     H H H
+          H#=#=T=H     H$H$H
+$         H#=#=T=H     HHHHH
+H$        H$=#=T$H     H H H
+#H$       H#=#=T=H     H H H
+##H$      H#=#=T=H     H$H$H
+###H$     H$###T$H     HHHHH
+####H$    H######H     H H H
+#####H$  H=# #= #=H   PH$H$H
+######H EH=# #= #=HE H######

@@ -1,0 +1,57 @@
+## Classic Challenge Pack
+## Author: NodeRunner Community
+## Description: 3 hand-crafted challenge levels for experienced players
+---
+# Challenge 1 - The Pit
+        ^              ^    
+                            
+    $       $       $       
+   ###     ###     ###      
+   H                  H     
+   H  ------  ------  H     
+   H  H    H  H    H  H     
+   H $H  E H  H E $H  H     
+   H##H####H  H####H##H     
+   H  H    H  H    H  H     
+   H  H----H--H----H  H     
+   H  H       H       H     
+   H  H  $    H  $    H     
+ P H  H #### EH ####  H     
+ ##H==H=======H=======H=    
+============================
+---
+# Challenge 2 - Ladder Maze
+    ^                  ^    
+                            
+ $     $     $     $     $  
+ ##   ##    ##    ##   ##   
+ H     H    H     H    H   
+ H--   H----H  ---H  --H   
+ H  H  H    H  H  H  H H  
+ H  H $H  E H  H $H  H H  
+ H##H##H####H  H##H##H#H  
+ H  H  H    H  H  H  H H  
+ H  H--H  --H--H--H  H-H  
+ H  H  H    H       E   H  
+ H  H  H  $ H  $      $ H  
+ H PH  H ## H  ##  #### H  
+ H##H==H====H===========H  
+============================
+---
+# Challenge 3 - Gold Rush
+       ^            ^       
+  $  $  $  $  $  $  $  $   
+  #  #  #  #  #  #  #  #   
+                            
+   ------H------H------    
+      E  H      H  E       
+   $     H  $   H     $    
+   ##T## H ##T##H ##T##    
+         H      H          
+   H-----H------H-----H    
+   H     H      H     H    
+   H  $  H   $  H  $  H    
+ P H ##  H  ##  H  ## H    
+ ##H=====H======H=====H    
+   H     H      H     H    
+============================

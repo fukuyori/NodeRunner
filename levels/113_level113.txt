@@ -1,0 +1,17 @@
+# Level 113
+~                           
+~                           
+###############H##        P 
+    E     E    H##T#=======H
+$  HHHHHHHHHHH H           H
+#$ H  HHHHHHHH H $ $ $#####H
+ #$H  H        H #~# ######H
+  #H  H$ $ $ $  H #        H
+   #$ H#T#T#T# H     ET $ $H
+    # H         H    #H####H
+      H H H H  H      H     
+      H         H     H E   
+       H H H   H      #####H
+        H H H   H          H
+    E    $~#   H   E       H
+############################

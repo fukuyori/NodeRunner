@@ -1,0 +1,17 @@
+# Level 118
+----------------~           
+     $          HE          
+    $$$        HHH          
+    $$$        HHH          
+   $$         HH            
+ $$ $$$     HH HHH  --------
+$$ $$  $$  HH HH  HH   E    
+   HH         HH      HHHHH 
+ E HHH        HHH     $$$$$ 
+HHHH HH    HHHH HH    HHHHH 
+     HH         HH    $$$$$ 
+     HH       P HH    HHHHH 
+############################
+                            
+                            
+############################

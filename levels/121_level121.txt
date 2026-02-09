@@ -1,0 +1,17 @@
+# Level 121
+       ~            ~       
+######H~            ~H######
+###HHH$~            ~$HHH###
+HH###HHH$          $HHH#T#HH
+$HHH#T#HHH$E    E$HHH###HHH 
+  $HHH###HHH$  $HHH#T#HHH   
+    $HHH#T#HHHHHH###HHH     
+      $HHH###HH###HHH       
+        $HHH#HH#HHH         
+      $HHH###HH###HHH       
+    $HHH###HHHHHH#T#HHH     
+  $HHH#T#HHH$  $HHH###HHH   
+$HHH###HHH$      $HHH#T#HHH 
+HH#T#HHH$          $HHH###HH
+###HHH$~            ~$HHH###
+######H~       P    ~H######

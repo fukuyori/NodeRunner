@@ -1,0 +1,49 @@
+# ╔═══════════════════════════════════════════╗
+# ║  Node Runner: Mainnet Protocol - Config  ║
+# ╚═══════════════════════════════════════════╝
+#
+# Place this file next to the executable.
+# All values shown are defaults. Delete or comment out lines to use defaults.
+
+[general]
+# Directory containing level files (relative to executable, or absolute path)
+levels_dir = "levels"
+
+[speed]
+# Main simulation tick interval in milliseconds (lower = faster)
+tick_rate_ms = 75
+
+# Player moves once every N ticks (1 = every tick, 2 = every other tick)
+player_move_rate = 2
+
+# Sentinels move once every N ticks
+guard_move_rate = 5
+
+# Ticks to complete a hack (firewall cracking animation)
+dig_duration = 5
+
+# Ticks before a hole refills
+hole_regen_ticks = 150
+
+# Ticks before a trapped sentinel escapes (must be < hole_regen_ticks)
+trap_escape_ticks = 100
+
+# Ticks before a killed sentinel respawns
+guard_respawn_ticks = 40
+
+[gamepad]
+# Button names: A, B, X, Y, L1, R1, L2, R2, Start, Select
+#
+# gilrs mapping (may vary by controller):
+#   A = South (Xbox A, PS ×, Switch B)
+#   B = East  (Xbox B, PS ○, Switch A)
+#   X = West  (Xbox X, PS □, Switch Y)
+#   Y = North (Xbox Y, PS △, Switch X)
+#   L1 = LeftTrigger   R1 = RightTrigger
+#   L2 = LeftTrigger2  R2 = RightTrigger2
+
+hack_left  = ["B", "Y", "L1"]
+hack_right = ["A", "X", "R1"]
+confirm    = ["Start"]
+cancel     = ["Select"]
+restart    = ["Start"]

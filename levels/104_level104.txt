@@ -1,0 +1,17 @@
+# Level 104
+            E              ~
+    $                 $    ~
+  H###H    ##H##    H###H  ~
+ H# $ #HH##HHHHH##HH# $ #H ~
+#H#####H##HHHHHHH#H######H#~
+     E   HHHH$HHHH         ~
+#########HHHHHHHHH#########~
+ ##$##   #HHHHHHH#  ##$##  ~
+  ###     #HHHHH#    ###   ~
+   #       #HHH#      #    ~
+            #H#            ~
+            #H#            ~
+            #H#            ~
+            #H#            ~
+    E        H     P       ~
+############################

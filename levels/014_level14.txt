@@ -1,0 +1,17 @@
+# Level 14
+  ~   E    -   E-~    ~-   $
+ -H   -H-   -  - H-   H -  H
+- H  - H -    -  H -  H  - H
+$ H -  H  -  -   H  -$H   -H
+  H-  -H   --    H$  -H    H
+H-   - H-  --  - H------ -  
+H -   -H  -$ -   H      H - 
+H- -   H$--H  -  H      H  -
+H - -  H-- H   - H      H  -
+H- $ -EH-  H -  -H-     H  -
+H -H  -    H   -   -    H  -
+H- H   -   H  - -   -   H  -
+H -H -  -  H$-   -   -  H $-
+H- H   - - H- -  $-   - H - 
+H -H  -   -H     - - - -H-  
+   H     $     $P       H   

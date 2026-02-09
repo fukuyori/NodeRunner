@@ -1,0 +1,17 @@
+# Level 8
+           ~    ~           
+           ~    ~           
+   $ E   H#H    H#H   E $   
+H#####H--H#H    H#H--H#####H
+H#   #H   #H    H#   H#   #H
+H#   #H   #H    H#   H#   #H
+H# $ #H   #H    H#   H# $ #H
+H#####H   #H    H#   H#####H
+H#   #H   #H    H#   H#   #H
+H#   #H---#H####H#---H#   #H
+H#   #   H#H    H#H   #   #H
+H#E$ #   H#H  $EH#H   # $E#H
+H##T##   H#TTTTTT#H   ##T##H
+H     T  H        H  T     H
+H      TEH    P   H T      H
+############################

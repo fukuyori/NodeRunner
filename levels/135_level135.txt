@@ -1,0 +1,17 @@
+# Level 135
+       ~                    
+       ~                    
+       ~   H================
+##HH###H###H     E   -------
+#$#H# #H# #H############  $ 
+# #H#$#H#$#HHHH$HHHH$HHH###H
+#THH###H# #HH====HH===HH   H
+HHHHHHHHHHHHH=  $HH=  HH##H$
+HH    H ## HH= -=HH= $HH# H#
+HH ###H #$#HH====HH===HH#H #
+HH #$ H  ##HH---- HHHHHH#H  
+HH ## H # #H  $   HHHHH####H
+HH    HP## H#######  $H###$H
+HHHHHHH====H#HHHHH= ##H### H
+H     $  ==H#H H H= ##H ##H#
+#####T   E  #H H$H=  $H# EH#

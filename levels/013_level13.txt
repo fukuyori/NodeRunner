@@ -1,0 +1,17 @@
+# Level 13
+            E          E   ~
+THTHTHTHTHTHTHTHTHTHTHTHTHT~
+THTHTHTHTHTHTHTHTHTHTHTHTHT~
+$H#H H#H$H#H H#H$H#H H#H$H#~
+TH#HTH#HTH#HTH#HTH#HTH#HTH#~
+TH#HTH#HTH#HTH#HTH#HTH#HTH#~
+TH#HTH#HTH#HTH#HTH#HTH#HTH#~
+ H#H H#H H#H$H#H H#H$H#H H#~
+TH#HTH#HTH#HTH#HTH#HTH#HTH#~
+TH#HTH#HTH#HTH#HTH#HTH#HTH#~
+$H H H H H H H H H H H H H ~
+H##########################~
+H         $ E $   $ E      ~
+H==========================~
+H$       P                $~
+############################
