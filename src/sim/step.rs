@@ -68,6 +68,21 @@ fn player_in_closing_hole(world: &WorldState) -> bool {
     })
 }
 
+/// Can gold be placed at (x, y)?
+///
+/// Gold may only rest on a solid surface (Brick, Concrete, TrapBrick)
+/// or the map bottom.  The tile at (x, y) itself must be Empty (not
+/// Ladder, Rope, Gold, or any other non-empty tile).
+fn can_drop_gold_at(world: &WorldState, x: usize, y: usize) -> bool {
+    if x >= world.width || y >= world.height { return false; }
+    let tile = world.terrain_at(x, y);
+    // Must be an empty cell — not a ladder, rope, gold, etc.
+    if tile != Tile::Empty { return false; }
+    // Must have solid ground below (or be at map bottom)
+    if y + 1 >= world.height { return true; }
+    world.terrain_at(x, y + 1).is_solid()
+}
+
 // ══════════════════════════════════════════════════════════════
 // Dig
 // ══════════════════════════════════════════════════════════════
@@ -461,14 +476,12 @@ fn guard_enter_hole(world: &mut WorldState, idx: usize, hole_x: usize, drop_y: O
 
     if world.guards[idx].carry_gold {
         if let Some(dy) = drop_y {
-            let tile = world.terrain_at(hole_x, dy);
-            if tile != Tile::Gold && tile.is_passable() {
-                // No gold here yet — drop it
+            if can_drop_gold_at(world, hole_x, dy) {
                 world.set_tile(hole_x, dy, Tile::Gold);
                 world.guards[idx].carry_gold = false;
                 world.guards[idx].carry_gold_timer = 0;
             }
-            // else: gold already exists at drop position → keep carrying
+            // else: can't drop here → keep carrying
         }
         // drop_y == None (top row): can't drop, keep carrying
     }
@@ -529,7 +542,7 @@ fn resolve_gold_pickup(world: &mut WorldState, events: &mut Vec<GameEvent>) {
 }
 
 /// Guards drop gold after carrying it for too long.
-/// Gold is placed at the guard's current position if passable and empty.
+/// Gold is placed at the guard's current position only on solid ground.
 fn resolve_guard_gold_drop(world: &mut WorldState, events: &mut Vec<GameEvent>) {
     let limit = world.speed.gold_carry_ticks;
     if limit == 0 { return; } // 0 = disabled
@@ -542,14 +555,13 @@ fn resolve_guard_gold_drop(world: &mut WorldState, events: &mut Vec<GameEvent>) 
         if world.guards[i].carry_gold_timer >= limit {
             let gx = world.guards[i].x;
             let gy = world.guards[i].y;
-            let tile = world.terrain_at(gx, gy);
-            if tile != Tile::Gold && tile.is_passable() {
+            if can_drop_gold_at(world, gx, gy) {
                 world.set_tile(gx, gy, Tile::Gold);
                 world.guards[i].carry_gold = false;
                 world.guards[i].carry_gold_timer = 0;
                 events.push(GameEvent::GuardDroppedGold { x: gx, y: gy });
             }
-            // Can't drop here (e.g. in hole) → keep trying next tick
+            // Can't drop here (ladder, rope, no solid ground) → keep trying next tick
         }
     }
 }
@@ -649,11 +661,8 @@ fn resolve_timers(world: &mut WorldState, events: &mut Vec<GameEvent>) {
                 if world.guards[i].carry_gold {
                     world.guards[i].carry_gold = false;
                     world.guards[i].carry_gold_timer = 0;
-                    if hy > 0 {
-                        let above = world.terrain_at(hx, hy - 1);
-                        if above.is_passable() && above != Tile::Gold {
-                            world.set_tile(hx, hy - 1, Tile::Gold);
-                        }
+                    if hy > 0 && can_drop_gold_at(world, hx, hy - 1) {
+                        world.set_tile(hx, hy - 1, Tile::Gold);
                     }
                 }
             } else if world.guards[i].state != ActorState::Dead {
@@ -713,8 +722,7 @@ fn try_escape(world: &mut WorldState, i: usize) {
         // Guard escaping with gold: try to drop at above-hole position (gx, gy-1).
         // Guard escaped to (ex, ey) = (gx±1, gy-1), so it won't stand on the gold.
         if world.guards[i].carry_gold && gy > 0 {
-            let tile = world.terrain_at(gx, gy - 1);
-            if tile != Tile::Gold && tile.is_passable() {
+            if can_drop_gold_at(world, gx, gy - 1) {
                 world.set_tile(gx, gy - 1, Tile::Gold);
                 world.guards[i].carry_gold = false;
                 world.guards[i].carry_gold_timer = 0;

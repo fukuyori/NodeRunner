@@ -14,7 +14,7 @@ use std::io::{self, BufWriter, Write};
 use crossterm::{
     cursor::{self, MoveTo},
     execute, queue,
-    style::{Attribute, Color, Print, ResetColor, SetAttribute, SetBackgroundColor, SetForegroundColor},
+    style::{Color, Print, ResetColor, SetBackgroundColor, SetForegroundColor},
     terminal::{self, Clear, ClearType},
 };
 
@@ -30,18 +30,28 @@ struct Cell {
     ch_len: u8,
     fg: Color,
     bg: Color,
-    bold: bool,
     wide: bool,    // true = this char occupies 2 terminal columns
     cont: bool,    // true = continuation of previous wide char (skip render)
 }
 
 impl Cell {
+    /// Explicit dark background for all "empty" terminal cells.
+    ///
+    /// On VTE-based Linux terminals (GNOME Terminal, etc.), the inter-row gap
+    /// pixels use the background color from the last Clear or the terminal's
+    /// configured default.  By using the SAME explicit RGB for both
+    /// `Clear(ClearType::All)` and every cell's background, the gap color
+    /// matches the cell color exactly, eliminating visible horizontal lines.
+    ///
+    /// If your terminal's own background differs from this value, set it to
+    /// RGB(22,22,35) in your terminal preferences for a seamless look.
+    const BASE_BG: Color = Color::Rgb { r: 22, g: 22, b: 35 };
+
     const BLANK: Cell = Cell {
         ch: [b' ', 0,0,0, 0,0,0,0, 0,0,0,0, 0,0,0,0],
         ch_len: 1,
-        fg: Color::Reset,
-        bg: Color::Reset,
-        bold: false,
+        fg: Color::White,
+        bg: Cell::BASE_BG,
         wide: false,
         cont: false,
     };
@@ -49,45 +59,62 @@ impl Cell {
     const WIDE_CONT: Cell = Cell {
         ch: [0; 16],
         ch_len: 0,
-        fg: Color::Reset,
-        bg: Color::Reset,
-        bold: false,
+        fg: Color::White,
+        bg: Cell::BASE_BG,
         wide: false,
         cont: true,
     };
 
-    fn from_char(c: char, fg: Color, bg: Color, bold: bool) -> Self {
+    /// Sentinel cell used to invalidate the back buffer.
+    /// Different from any real cell, so every position will be diff'd.
+    const INVALID: Cell = Cell {
+        ch: [b'?', 0,0,0, 0,0,0,0, 0,0,0,0, 0,0,0,0],
+        ch_len: 1,
+        fg: Color::Magenta,
+        bg: Color::Magenta,
+        wide: false,
+        cont: false,
+    };
+
+    /// Normalize bg: Color::Reset → BASE_BG so that every cell gets an
+    /// explicit background color (never terminal-default).
+    #[inline]
+    fn norm_bg(bg: Color) -> Color {
+        match bg {
+            Color::Reset => Self::BASE_BG,
+            other => other,
+        }
+    }
+
+    fn from_char(c: char, fg: Color, bg: Color, _bold: bool) -> Self {
         let mut cell = Self::BLANK;
         let len = c.encode_utf8(&mut cell.ch).len() as u8;
         cell.ch_len = len;
         cell.fg = fg;
-        cell.bg = bg;
-        cell.bold = bold;
+        cell.bg = Self::norm_bg(bg);
         cell
     }
 
-    fn from_char_wide(c: char, fg: Color, bg: Color, bold: bool) -> Self {
+    fn from_char_wide(c: char, fg: Color, bg: Color, _bold: bool) -> Self {
         let mut cell = Self::BLANK;
         let len = c.encode_utf8(&mut cell.ch).len() as u8;
         cell.ch_len = len;
         cell.fg = fg;
-        cell.bg = bg;
-        cell.bold = bold;
+        cell.bg = Self::norm_bg(bg);
         cell.wide = true;
         cell
     }
 
     /// Create a wide cell from a multi-codepoint string (e.g. ZWJ emoji).
     #[allow(dead_code)]
-    fn from_str_wide(s: &str, fg: Color, bg: Color, bold: bool) -> Self {
+    fn from_str_wide(s: &str, fg: Color, bg: Color, _bold: bool) -> Self {
         let mut cell = Self::BLANK;
         let bytes = s.as_bytes();
         let len = bytes.len().min(16);
         cell.ch[..len].copy_from_slice(&bytes[..len]);
         cell.ch_len = len as u8;
         cell.fg = fg;
-        cell.bg = bg;
-        cell.bold = bold;
+        cell.bg = Self::norm_bg(bg);
         cell.wide = true;
         cell
     }
@@ -142,11 +169,11 @@ impl FrameBuffer {
     }
 
     /// Write a string at (x, y) with given colors. Each char occupies 1 column.
-    fn put_str(&mut self, x: usize, y: usize, s: &str, fg: Color, bg: Color, bold: bool) {
+    fn put_str(&mut self, x: usize, y: usize, s: &str, fg: Color, bg: Color, _bold: bool) {
         let mut cx = x;
         for ch in s.chars() {
             if cx >= self.width { break; }
-            self.set(cx, y, Cell::from_char(ch, fg, bg, bold));
+            self.set(cx, y, Cell::from_char(ch, fg, bg, false));
             cx += 1;
         }
     }
@@ -189,6 +216,7 @@ impl Renderer {
             self.writer,
             terminal::EnterAlternateScreen,
             cursor::Hide,
+            SetBackgroundColor(Cell::BASE_BG),
             Clear(ClearType::All)
         )?;
 
@@ -197,8 +225,8 @@ impl Renderer {
         self.term_h = th as usize;
         self.front.resize(self.term_w, self.term_h);
         self.back.resize(self.term_w, self.term_h);
-        // Force full redraw on first frame by making back different from front
-        self.back.cells.fill(Cell::from_char('?', Color::Magenta, Color::Magenta, false));
+        // Force full repaint on first frame: back ≠ front for every cell.
+        self.back.cells.fill(Cell::INVALID);
 
         Ok(())
     }
@@ -221,9 +249,9 @@ impl Renderer {
             self.term_h = th as usize;
             self.front.resize(self.term_w, self.term_h);
             self.back.resize(self.term_w, self.term_h);
-            // Force full redraw
-            self.back.cells.fill(Cell::from_char('?', Color::Magenta, Color::Magenta, false));
-            queue!(self.writer, Clear(ClearType::All))?;
+            // Force full repaint after resize.
+            self.back.cells.fill(Cell::INVALID);
+            queue!(self.writer, SetBackgroundColor(Cell::BASE_BG), Clear(ClearType::All))?;
         }
 
         // Update camera viewport dimensions from terminal size
@@ -248,8 +276,8 @@ impl Renderer {
         // Detect phase change → clear for clean transition
         let phase_changed = self.last_phase != Some(world.phase);
         if phase_changed {
-            self.back.cells.fill(Cell::from_char('?', Color::Magenta, Color::Magenta, false));
-            queue!(self.writer, Clear(ClearType::All))?;
+            self.back.cells.fill(Cell::INVALID);
+            queue!(self.writer, SetBackgroundColor(Cell::BASE_BG), Clear(ClearType::All))?;
             self.last_phase = Some(world.phase);
         }
 
@@ -304,15 +332,19 @@ impl Renderer {
     // ── Diff flush: only write changed cells ──
 
     fn flush_diff(&mut self) -> io::Result<()> {
-        let mut last_fg = Color::Reset;
-        let mut last_bg = Color::Reset;
-        let mut last_bold = false;
+        let mut last_fg = Color::White;
+        let mut last_bg = Cell::BASE_BG;
         let mut need_move = true;
         let mut last_x: usize = 0;
         let mut last_y: usize = 0;
 
-        // Reset at start of frame
-        queue!(self.writer, ResetColor, SetAttribute(Attribute::Reset))?;
+        // Set explicit base colors at start of frame.
+        // IMPORTANT: Do NOT use ResetColor here — it resets to the terminal's
+        // native default, which may differ from BASE_BG and cause line artifacts.
+        queue!(self.writer,
+            SetForegroundColor(Color::White),
+            SetBackgroundColor(Cell::BASE_BG),
+        )?;
 
         for y in 0..self.front.height {
             let mut x = 0;
@@ -353,14 +385,6 @@ impl Renderer {
                     queue!(self.writer, SetBackgroundColor(cell.bg))?;
                     last_bg = cell.bg;
                 }
-                if cell.bold != last_bold {
-                    if cell.bold {
-                        queue!(self.writer, SetAttribute(Attribute::Bold))?;
-                    } else {
-                        queue!(self.writer, SetAttribute(Attribute::NoBold))?;
-                    }
-                    last_bold = cell.bold;
-                }
 
                 queue!(self.writer, Print(cell.as_str()))?;
 
@@ -376,7 +400,6 @@ impl Renderer {
             }
         }
 
-        queue!(self.writer, ResetColor, SetAttribute(Attribute::Reset))?;
         self.writer.flush()
     }
 
@@ -439,11 +462,10 @@ impl Renderer {
         }
     }
 
-    /// Render an out-of-bounds / void cell (dark background).
+    /// Render an out-of-bounds / void cell (game background).
     fn compose_void(&mut self, col: usize, row: usize) {
-        let void_bg = Color::Rgb{r:8,g:8,b:12};
-        self.front.set(col, row, Cell::from_char(' ', Color::Reset, void_bg, false));
-        self.front.set(col + 1, row, Cell::from_char(' ', Color::Reset, void_bg, false));
+        self.front.set(col, row, Cell::from_char(' ', Color::White, Cell::BASE_BG, false));
+        self.front.set(col + 1, row, Cell::from_char(' ', Color::White, Cell::BASE_BG, false));
     }
 
     /// Render a world cell through the camera. If (wx, wy) is out of world bounds, void.
@@ -539,14 +561,14 @@ impl Renderer {
         }
 
         // Tile
-        let (c0, c1, fg, bg, bold) = match w.tiles[gy][gx] {
-            Tile::Empty => (' ', ' ', Color::Reset, Color::Reset, false),
-            Tile::Brick         => ('░', '░', Color::Rgb{r:180,g:120,b:60}, Color::Rgb{r:100,g:65,b:30}, false),
-            Tile::TrapBrick     => ('░', '░', Color::Rgb{r:180,g:120,b:60}, Color::Rgb{r:100,g:65,b:30}, false),
-            Tile::Concrete      => ('█', '█', Color::Rgb{r:120,g:120,b:120}, Color::Rgb{r:70,g:70,b:70}, false),
-            Tile::Ladder        => ('╠', '╣', Color::Rgb{r:100,g:200,b:255}, Color::Reset, false),
-            Tile::HiddenLadder  => ('╏', '╏', Color::Rgb{r:0,g:180,b:180}, Color::Rgb{r:0,g:40,b:40}, false),
-            Tile::Rope          => ('━', '━', Color::Rgb{r:180,g:100,b:200}, Color::Reset, false),
+        let (c0, c1, fg, bg) = match w.tiles[gy][gx] {
+            Tile::Empty => (' ', ' ', Color::Reset, Color::Reset),
+            Tile::Brick         => ('░', '░', Color::Rgb{r:180,g:120,b:60}, Color::Rgb{r:100,g:65,b:30}),
+            Tile::TrapBrick     => ('░', '░', Color::Rgb{r:180,g:120,b:60}, Color::Rgb{r:100,g:65,b:30}),
+            Tile::Concrete      => ('█', '█', Color::Rgb{r:120,g:120,b:120}, Color::Rgb{r:70,g:70,b:70}),
+            Tile::Ladder        => ('╠', '╣', Color::Rgb{r:100,g:200,b:255}, Color::Reset),
+            Tile::HiddenLadder  => ('╏', '╏', Color::Rgb{r:0,g:180,b:180}, Color::Rgb{r:0,g:40,b:40}),
+            Tile::Rope          => ('━', '━', Color::Rgb{r:180,g:100,b:200}, Color::Reset),
             Tile::Gold          => {
                 // Token: wide emoji 💰
                 self.front.set(col, row, Cell::from_char_wide('💰', Color::Reset, Color::Reset, false));
@@ -554,8 +576,8 @@ impl Renderer {
                 return;
             }
         };
-        self.front.set(col, row, Cell::from_char(c0, fg, bg, bold));
-        self.front.set(col + 1, row, Cell::from_char(c1, fg, bg, bold));
+        self.front.set(col, row, Cell::from_char(c0, fg, bg, false));
+        self.front.set(col + 1, row, Cell::from_char(c1, fg, bg, false));
     }
 
     // ── Static screens (title, game over, etc.) ──
@@ -716,22 +738,22 @@ impl Renderer {
 
     /// Render a tile without entities (for intro animation)
     fn compose_tile_only(&mut self, w: &WorldState, gx: usize, gy: usize, col: usize, row: usize) {
-        let (c0, c1, fg, bg, bold) = match w.tiles[gy][gx] {
-            Tile::Empty => (' ', ' ', Color::Reset, Color::Reset, false),
-            Tile::Brick         => ('░', '░', Color::Rgb{r:180,g:120,b:60}, Color::Rgb{r:100,g:65,b:30}, false),
-            Tile::TrapBrick     => ('░', '░', Color::Rgb{r:180,g:120,b:60}, Color::Rgb{r:100,g:65,b:30}, false),
-            Tile::Concrete      => ('█', '█', Color::Rgb{r:120,g:120,b:120}, Color::Rgb{r:70,g:70,b:70}, false),
-            Tile::Ladder        => ('╠', '╣', Color::Rgb{r:100,g:200,b:255}, Color::Reset, false),
-            Tile::HiddenLadder  => (' ', ' ', Color::Reset, Color::Reset, false),
-            Tile::Rope          => ('━', '━', Color::Rgb{r:180,g:100,b:200}, Color::Reset, false),
+        let (c0, c1, fg, bg) = match w.tiles[gy][gx] {
+            Tile::Empty => (' ', ' ', Color::Reset, Color::Reset),
+            Tile::Brick         => ('░', '░', Color::Rgb{r:180,g:120,b:60}, Color::Rgb{r:100,g:65,b:30}),
+            Tile::TrapBrick     => ('░', '░', Color::Rgb{r:180,g:120,b:60}, Color::Rgb{r:100,g:65,b:30}),
+            Tile::Concrete      => ('█', '█', Color::Rgb{r:120,g:120,b:120}, Color::Rgb{r:70,g:70,b:70}),
+            Tile::Ladder        => ('╠', '╣', Color::Rgb{r:100,g:200,b:255}, Color::Reset),
+            Tile::HiddenLadder  => (' ', ' ', Color::Reset, Color::Reset),
+            Tile::Rope          => ('━', '━', Color::Rgb{r:180,g:100,b:200}, Color::Reset),
             Tile::Gold          => {
                 self.front.set(col, row, Cell::from_char_wide('💰', Color::Reset, Color::Reset, false));
                 self.front.set(col + 1, row, Cell::WIDE_CONT);
                 return;
             }
         };
-        self.front.set(col, row, Cell::from_char(c0, fg, bg, bold));
-        self.front.set(col + 1, row, Cell::from_char(c1, fg, bg, bold));
+        self.front.set(col, row, Cell::from_char(c0, fg, bg, false));
+        self.front.set(col + 1, row, Cell::from_char(c1, fg, bg, false));
     }
 
     /// Animated game view: handles LevelOutro, LevelComplete, and Dying phases

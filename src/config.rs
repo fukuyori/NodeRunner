@@ -197,13 +197,16 @@ impl GameConfig {
     }
 }
 
-/// Candidate directories to search: exe dir + CWD (deduplicated).
+/// Candidate directories to search: exe dir + CWD + system paths (deduplicated).
 fn candidate_dirs() -> Vec<PathBuf> {
     let mut dirs = vec![];
 
     // 1. Directory of the running executable
     if let Ok(exe) = std::env::current_exe() {
-        if let Some(parent) = exe.parent() {
+        // Resolve symlinks so /usr/bin/noderunner → /usr/games/noderunner
+        // still finds data relative to the real binary.
+        let resolved = exe.canonicalize().unwrap_or(exe);
+        if let Some(parent) = resolved.parent() {
             dirs.push(parent.to_path_buf());
         }
     }
@@ -215,7 +218,21 @@ fn candidate_dirs() -> Vec<PathBuf> {
         }
     }
 
-    // 3. Fallback
+    // 3. XDG data home (~/.local/share/noderunner)
+    if let Ok(home) = std::env::var("HOME") {
+        let xdg = PathBuf::from(&home).join(".local/share/noderunner");
+        if xdg.is_dir() && !dirs.iter().any(|d| d == &xdg) {
+            dirs.push(xdg);
+        }
+    }
+
+    // 4. System data directory (/usr/share/noderunner)
+    let sys = PathBuf::from("/usr/share/noderunner");
+    if sys.is_dir() && !dirs.iter().any(|d| d == &sys) {
+        dirs.push(sys);
+    }
+
+    // 5. Fallback
     if dirs.is_empty() {
         dirs.push(PathBuf::from("."));
     }

@@ -419,18 +419,38 @@ fn load_from_directory(dir: &Path) -> Vec<(String, LevelDef)> {
 /// Search dirs for packs: exe dir, CWD (same logic as config).
 fn pack_search_dirs() -> Vec<PathBuf> {
     let mut dirs = vec![];
+
+    // 1. Exe directory (resolve symlinks)
     if let Ok(exe) = std::env::current_exe() {
-        if let Some(parent) = exe.parent() {
+        let resolved = exe.canonicalize().unwrap_or(exe);
+        if let Some(parent) = resolved.parent() {
             dirs.push(parent.to_path_buf());
         }
     }
+
+    // 2. CWD
     if let Ok(cwd) = std::env::current_dir() {
         if !dirs.iter().any(|d| d == &cwd) {
             dirs.push(cwd);
         }
     }
+
+    // 3. XDG data home (~/.local/share/noderunner)
+    if let Ok(home) = std::env::var("HOME") {
+        let xdg = std::path::PathBuf::from(&home).join(".local/share/noderunner");
+        if xdg.is_dir() && !dirs.iter().any(|d| d == &xdg) {
+            dirs.push(xdg);
+        }
+    }
+
+    // 4. System data (/usr/share/noderunner)
+    let sys = std::path::PathBuf::from("/usr/share/noderunner");
+    if sys.is_dir() && !dirs.iter().any(|d| d == &sys) {
+        dirs.push(sys);
+    }
+
     if dirs.is_empty() {
-        dirs.push(PathBuf::from("."));
+        dirs.push(std::path::PathBuf::from("."));
     }
     dirs
 }

@@ -104,11 +104,28 @@ pub struct SnapshotDig {
 const LEGACY_SAVE: &str = "save.dat";
 
 fn save_dir() -> PathBuf {
+    // 1. Try exe directory (works for local/portable installs)
     if let Ok(exe) = std::env::current_exe() {
-        if let Some(parent) = exe.parent() {
-            return parent.to_path_buf();
+        let resolved = exe.canonicalize().unwrap_or(exe);
+        if let Some(parent) = resolved.parent() {
+            // Check if writable (system installs like /usr/games/ won't be)
+            let test_path = parent.join(".write_test_noderunner");
+            if std::fs::write(&test_path, "").is_ok() {
+                let _ = std::fs::remove_file(&test_path);
+                return parent.to_path_buf();
+            }
         }
     }
+
+    // 2. XDG data home (~/.local/share/noderunner) for system installs
+    if let Ok(home) = std::env::var("HOME") {
+        let xdg = PathBuf::from(&home).join(".local/share/noderunner");
+        if std::fs::create_dir_all(&xdg).is_ok() {
+            return xdg;
+        }
+    }
+
+    // 3. Fallback to CWD
     std::env::current_dir().unwrap_or_else(|_| PathBuf::from("."))
 }
 
